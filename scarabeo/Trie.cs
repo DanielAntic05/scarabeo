@@ -18,12 +18,16 @@ namespace Scarabeo
             }
         } 
 
-        public CTrieNode? Root { get; private set; }
+
+        private readonly CTrieNode Root;
+
+
+        public CTrie() { Root = new CTrieNode(); }
 
 
         public void Insert(string key)
         {
-            CTrieNode? tmpNode = Root;
+            CTrieNode tmpNode = Root;
 
             for (int level = 0; level < key.Length; level++)
             {
@@ -53,22 +57,74 @@ namespace Scarabeo
                 tmpNode = tmpNode.Children[index];
             }
 
-            return (tmpNode.IsEndOfWord);
+            return tmpNode.IsEndOfWord;
         }
 
 
         public void Delete(string key)
         {
-            CTrieNode tmpNode = Root;
+            DeleteRecursive(Root, key, 0);
+        }
 
-            for (int level = 0; level < key.Length; level++)
+
+        private bool DeleteRecursive(CTrieNode node, string key, int level)
+        {
+            if (node == null)
+                return false;
+
+            if (level == key.Length)
             {
-                int index = key[level] - 'a';
+                if (node.IsEndOfWord)
+                {
+                    node.IsEndOfWord = false;
+                    return IsNodeEmpty(node);
+                }
 
-                // if (tmpNode.Children[index] == )
+                return false;
+            }
+
+            int index = key[level] - 'a';
+
+            if (DeleteRecursive(node.Children[index], key, level + 1))
+            {
+                node.Children[index] = null;
+                return !node.IsEndOfWord && IsNodeEmpty(node);
+            }
+
+            return false;
+        }
+
+
+        private bool IsNodeEmpty(CTrieNode node)
+        {
+            foreach (var child in node.Children)
+                if (child != null)
+                    return false;
+
+            return true;
+        }
+
+
+
+        public void Print()
+        {
+            PrintRecursive(Root, "");
+        }
+
+
+        private void PrintRecursive(CTrieNode node, string prefix)
+        {
+            if (node.IsEndOfWord)
+                Console.WriteLine(prefix);
+
+            for (int level = 0; level < node.Children.Length; level++)
+            {
+                if (node.Children[level] == null)
+                    continue;
+
+                char c = (char)('a' + level);
+                PrintRecursive(node.Children[level], prefix + c);
             }
         }
     }
-
-    
 }

@@ -1,0 +1,14 @@
+quadre:
+
+ciascuna squadra dovrà comporre 4 parole a turno
+
+lunghezza parola < 8
+
+ciascuna squadra estrae 8 lettere da un sacchetto contenente 128 lettere
+dell'alfabeto
+
+viene fornito un dizionariio di parole per poter trovare una parola che
+restituisca il
+punteggio più alto sommando tutti i punti delle lettere
+
+bonus --> dopo
