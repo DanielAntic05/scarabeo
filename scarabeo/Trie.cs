@@ -4,7 +4,7 @@ namespace Scarabeo
 {
     class CTrie
     {
-        static readonly int ALPHABET_SIZE = 26;
+        private static readonly int ALPHABET_SIZE = 26;
 
         internal class CTrieNode
         {
@@ -16,14 +16,14 @@ namespace Scarabeo
                 Children = new CTrieNode[ALPHABET_SIZE];
                 IsEndOfWord = false;
             }
-        }    
+        } 
 
-        public CTrieNode Root { get; private set; }
+        public CTrieNode? Root { get; private set; }
 
 
         public void Insert(string key)
         {
-            CTrieNode tmpNode = Root;
+            CTrieNode? tmpNode = Root;
 
             for (int level = 0; level < key.Length; level++)
             {
