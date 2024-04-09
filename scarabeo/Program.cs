@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace Scarabeo
 {
@@ -6,12 +7,8 @@ namespace Scarabeo
 	{
 		static void Main()
 		{
-			CTrie trie = new();
-
-			trie.Insert("yogurt");
-			trie.Print();
-			trie.Delete("yogurt");
-			trie.Print();
+			Thread mainThread = new Thread(() => new Game());
+			mainThread.Start();
 		}
 	}
 

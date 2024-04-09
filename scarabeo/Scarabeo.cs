@@ -48,6 +48,10 @@ namespace Scarabeo
 
 
         public void GenerateInputFile()
+        {
+
+        }
+
 
         public void GenerateCharacters()
         {
