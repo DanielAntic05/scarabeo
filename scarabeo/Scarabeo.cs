@@ -1,17 +1,28 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
+
 
 namespace Scarabeo
 {
     class Scarabeo
     {
         private const int BOARD_SIZE = 8;
+
         private char[,] board;
 
+        private static readonly string projectPath = GetProjectPath();
 
         public Scarabeo()
         {
             board = new char[BOARD_SIZE, BOARD_SIZE];
+
+        }
+
+
+        private static string GetProjectPath()
+        {
+            return Environment.CurrentDirectory;;
         }
 
 
@@ -46,14 +57,40 @@ namespace Scarabeo
         }
 
 
+        public void InitializeScarabeo()
+        {
+            InitializeMatrix();
+            GenerateInputFile();
+        }
 
-        public void GenerateInputFile()
+
+        // generate some characters and bonus
+        private void InitializeMatrix() 
         {
 
         }
 
 
-        public void GenerateCharacters()
+
+        private void GenerateInputFile()
+        {
+            try
+            {
+                
+            }
+            catch (System.Exception)
+            {
+                
+                throw;
+            }
+            finally
+            {
+
+            }
+        }
+
+
+        private void GenerateCharacters()
         {
 
         }
