@@ -7,8 +7,24 @@ lunghezza parola 0..8
 ciascuna squadra estrae 8 lettere da un sacchetto contenente 128 lettere
 dell'alfabeto
 
-viene fornito un dizionario di parole per poter trovare una parola che
-restituisca il
-punteggio più alto sommando tutti i punti delle lettere
+viene fornito un dizionario delle parole 
+prese dal file xml per poter trovare 
+una parola che restituisca il punteggio più alto sommando tutti i punti delle lettere
+
+(
+data una parola del dizionario ad esempio ‘fabbrica’ creiamo una chiave per questa parola
+ordinando in modo crescente le sue lettere ottenendo così ‘aabbcifr’ (nota che questo è un
+anagramma della parola iniziale), nota che tutti gli anagrammi di ‘fabbrica’ produrranno la
+stessa chiave ‘aabbcifr’;
+)
 
 bonus --> dopo
+
+Consegna:
+
+Il candidato può sviluppare la simulazione secondo le linee guida indicate:
+Bisognerà rappresentare il campo di gioco come una scacchiera 8x8, caricare nel trie il dizionario
+leggendolo dal file XML di esempio fornito, definire un “Distributore” per consegnare le prime 8
+lettere casuali e le successive ogni qualvolta ci sarà bisogno, indicare prima di ciascuna mossa la
+lettera vincolante e la sua posizione oltre al bonus e alla sua posizione quindi effettuare la mossa
+scegliendo la parola “migliore” da inserire nella riga.
