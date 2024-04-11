@@ -33,19 +33,19 @@ namespace Scarabeo
                     for (int k = 0; k < letters[j].Length; k++)
                         totalFrequency += lettersProbability[j];
 
-
                 int randomNumber = rand.Next(1, totalFrequency + 1);
                 int cumulativeFrequency = 0;
 
                 for (int j = 0; j < letters.Length)
                 {
-                        cumulativeFrequency += kvp.Value;
-                        if (randomNumber <= cumulativeFrequency)
-                        {
-                            result += kvp.Key;
-                            break;
-                        }
+                    for (int k = 0; k < letters[j].Length; k++)
+                        cumulativeFrequency += lettersProbability[j];
 
+                    if (randomNumber <= cumulativeFrequency)
+                    {
+                        result += kvp.Key;
+                        break;
+                    }
                 }
             }            
 
