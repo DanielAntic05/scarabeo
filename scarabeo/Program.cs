@@ -10,7 +10,6 @@ namespace Scarabeo
 
 		static void Main()
 		{
-
 			Thread mainThread = new Thread(() => game = new Game());
 			mainThread.Start();
 

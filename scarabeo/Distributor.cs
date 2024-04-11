@@ -5,9 +5,11 @@ namespace Scarabeo
 {
     class Distributor
     {
-        private const int N_CHARACTERS = 8;
+        private const int N_CHARACTERS = 21;
+        private const int CHARACTERS_TO_EXTRACT = 8;
+        private const int TOTAL_FREQUENCY = 128;
 
-        private static readonly string[] letters =
+        private static readonly string[] letterGroups =
         {
             "aeio",
             "crst",
@@ -25,27 +27,30 @@ namespace Scarabeo
 
             Random rand = new Random();
 
-            for (int i = 0; i < N_CHARACTERS; i++)
+            for (int i = 0; i < CHARACTERS_TO_EXTRACT; i++)
             {
-                int totalFrequency = 0;
-
-                for (int j = 0; j < letters.Length; j++)
-                    for (int k = 0; k < letters[j].Length; k++)
-                        totalFrequency += lettersProbability[j];
-
-                int randomNumber = rand.Next(1, totalFrequency + 1);
+                int randomNumber = rand.Next(1, TOTAL_FREQUENCY + 1);
                 int cumulativeFrequency = 0;
 
-                for (int j = 0; j < letters.Length)
+                int j = 0, k = 0;
+
+                while (j < N_CHARACTERS)
                 {
-                    for (int k = 0; k < letters[j].Length; k++)
-                        cumulativeFrequency += lettersProbability[j];
+                    cumulativeFrequency += lettersProbability[j];
 
                     if (randomNumber <= cumulativeFrequency)
                     {
-                        result += kvp.Key;
+                        result += letterGroups[j][k];
                         break;
                     }
+
+                    if (k == letterGroups[j].Length - 1)
+                    {
+                        j++;
+                        k = 0;
+                    }
+                    else
+                        k++;
                 }
             }            
 
