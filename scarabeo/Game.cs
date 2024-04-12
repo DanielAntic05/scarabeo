@@ -29,14 +29,15 @@ namespace Scarabeo
 	
 		private void InitializeDictionary()
 		{
-			if (!File.Exists(FILE))
-				throw new FileLoadException($"\nError occured while opening {FILE}\n");
+			if (!File.Exists("files\\" + FILE))
+				throw new FileNotFoundException($"\nThe file '{FILE}' could not be opened because it does not exist.\n");
 
-            using StreamReader file = new StreamReader(FILE);
+            using StreamReader file = new("files\\" + FILE);
             string line;
 
             while ((line = file.ReadLine()) != null)
-                dictionary.Insert(line);
+                //dictionary.Insert(line);
+				Console.WriteLine($"\n{line}\n");
 
             file.Close();
         }
@@ -50,7 +51,7 @@ namespace Scarabeo
 				
 				string result = FindHighestScoreWord();	
 
-
+				Console.WriteLine($"\nresult = {result};\n");
 
 
 				turn = (turn + 1) % 2;
@@ -68,13 +69,16 @@ namespace Scarabeo
 			{
 				string combinedLetters = GetCombinationOfLetters(i, j);
 
-				if (!IsWordValid(in combinedLetters))
+				if (!IsWordValid(combinedLetters))
 					continue;
 
-				int tmpValue = CalculateWordValue(in combinedLetters);
+				int tmpValue = CalculateWordValue(combinedLetters);
 				
 				if (maxValue < tmpValue) // TODO control also the bonus in the board
+				{
 					maxValue = tmpValue;
+					highestScoreWord = combinedLetters;
+				}
 
 				if (j == extractedLetters.Length - 1)
 				{
@@ -104,13 +108,13 @@ namespace Scarabeo
 		}
 
 
-		private bool IsWordValid(in string combinedLetters)
+		private bool IsWordValid(string combinedLetters)
 		{
 			return dictionary.Search(combinedLetters);
 		}
 
 
-		private int CalculateWordValue(in string combinedLetters)
+		private int CalculateWordValue(string combinedLetters)
 		{
 			int counter = 0;
 
