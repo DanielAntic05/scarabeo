@@ -20,26 +20,35 @@ namespace Scarabeo
 			scarabeo = new Scarabeo();
 			dictionary = new CTrie();
 
+		}
+
+
+		public void InitializeGame()
+		{
 			scarabeo.InitializeScarabeo();
 			InitializeDictionary();
 			Run();
 		}
-
-
 	
 		private void InitializeDictionary()
 		{
 			if (!File.Exists("files\\" + FILE))
 				throw new FileNotFoundException($"\nThe file '{FILE}' could not be opened because it does not exist.\n");
 
-            using StreamReader file = new("files\\" + FILE);
-            string line;
+			try
+			{
+				using StreamReader file = new("files\\" + FILE);
+				string? line;
 
-            while ((line = file.ReadLine()) != null)
-                //dictionary.Insert(line);
-				Console.WriteLine($"\n{line}\n");
+				while ((line = file.ReadLine()) != null)
+					dictionary.Insert(line);
 
-            file.Close();
+				file.Close();
+			}
+			catch
+			{
+				Console.Write($"\nError occured while reading the contents of the file '{FILE}'.\n");
+			}
         }
 
 
@@ -53,6 +62,8 @@ namespace Scarabeo
 
 				Console.WriteLine($"\nresult = {result};\n");
 
+				Console.Write("\nPress any key to change the turn.\n");
+				Console.ReadKey();
 
 				turn = (turn + 1) % 2;
 			}
@@ -83,6 +94,9 @@ namespace Scarabeo
 					continue;
 
 				int tmpValue = CalculateWordValue(combinedLetters);
+
+				if (PutWordBasedOnConstraintCharacter(combinedLetters, tmpValue) == -1)
+					continue;
 				
 				if (maxValue < tmpValue)
 				{
@@ -124,47 +138,59 @@ namespace Scarabeo
 		}
 
 
-		private int FindPositionOfConstraintCharacter(string combinedLetters)
+		private int PutWordBasedOnConstraintCharacter(string combinedLetters, int wordValue)
 		{
 			const int BOARD_SIZE = Scarabeo.BOARD_SIZE;
+			int leftAvaibleSpace = -1, rightAvaibleSpace = -1;
+			int bestRow = -1, bestCol = -1;
+			int maxValue = 0;
 
 			for (int i = 0; i < BOARD_SIZE; i++)
 			{
-				char constraintCharacter = '\0';
 				int j;
 
 				for (j = 0; j < BOARD_SIZE; j++)
 					if (scarabeo[i, j] != null)
-					{
-						constraintCharacter = scarabeo[i, j];
 						break;
-					}
 
-				int constraintCharacterIndex = combinedLetters.IndexOf(constraintCharacter);
+				int constraintCharacterIndex = j; 
 
-				if (constraintCharacter == '\0' || constraintCharacter == -1)
-					break;
-
-				int leftAvaibleSpace = j - 1;
-				int rightAvaibleSpace = (BOARD_SIZE - 1) - j;
+				int tmpLeftAvaibleSpace = constraintCharacterIndex - 1;
+				int tmpRightAvaibleSpace = (BOARD_SIZE - 1) - constraintCharacterIndex;
 				
 				if (!WordCanBePlacedInColumn(
-					leftAvaibleSpace, rightAvaibleSpace, 
+					tmpLeftAvaibleSpace, tmpRightAvaibleSpace, 
 					constraintCharacterIndex, combinedLetters.Length))
 					
-					break;
+					continue;
 
-				// put the word in the right way in the col of the board ---> example:  {, , , i, , ,} <---- "ciao"
+				// puts the word in the right way in the col of the board ---> example:  {, , , i, , ,} <---- "ciao"
+				// 																							  output: {, , c, i, a, o}
 
-																						// output: {, , c, i, a, o}
-				for (int l = 0, k = leftAvaibleSpace - (constraintCharacterIndex - 1); k < combinedLetters.Length; k++, l++)
-					scarabeo[i, k] = combinedLetters[l];
+				// here i have to compare the points of the word 
+				// in each column considering the "bonus".
+
+				if (maxValue < wordValue)
+				{
+					bestRow = i; bestCol = j;
+					maxValue = wordValue;
+				}
 			}
-
 
 			return -1;
 		}
 
+
+		private void PutWordInBestColumn(int leftAvaibleSpace, int constraintCharacterIndex, int combinedLetters)
+		{
+			for (int l = 0, k = leftAvaibleSpace - (constraintCharacterIndex - 1); k < combinedLetters.Length; k++, l++)
+				scarabeo[i, k] = combinedLetters[l];
+		}
+
+
+		// Controls if there is enough space before and 
+		// after the cell where constraint character is placed.
+		// Example:  {, l, , ,}   input: "hello" ---> there is not enough space at the left of 'i'
 
 		private bool WordCanBePlacedInColumn(int leftAvaibleSpace, int rightAvaibleSpace, int constraintCharacterIndex, int wordLength)
 		{

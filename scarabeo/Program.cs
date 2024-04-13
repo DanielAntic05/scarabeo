@@ -5,12 +5,12 @@ namespace Scarabeo
 {
 	class Program
 	{
-		private static Game game;
+		private static Game game = new();
 
 
 		static void Main()
 		{
-			Thread mainThread = new Thread(() => game = new Game());
+			Thread mainThread = new Thread(() => game.InitializeGame());
 			mainThread.Start();
 
 			while (game.IsGameRunning);

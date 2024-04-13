@@ -8,6 +8,8 @@ namespace Scarabeo
     class Scarabeo
     {
         public const int BOARD_SIZE = 8;
+        private const int FIRST_CHARACTER_ASCII_VALUE = 97;
+        private const int LAST_CHARACTER_ASCII_VALUE = 123;
         private char[,] board;
         private static readonly string projectPath = GetProjectPath();
 
@@ -58,40 +60,23 @@ namespace Scarabeo
 
         public void InitializeScarabeo()
         {
-            InitializeMatrix();
-            GenerateInputFile();
+            int j;
+            Random rnd = new();
+
+            for (int i = 0; i < BOARD_SIZE; i++)
+            {
+                j = rnd.Next(0, BOARD_SIZE); 
+                board[i, j] = GenerateRandomCharacter(); 
+            }
         }
 
 
         // generate some characters and bonus
-        private void InitializeMatrix() 
+        private char GenerateRandomCharacter()
         {
+            Random rnd = new();
 
-        }
-
-
-
-        private void GenerateInputFile()
-        {
-            try
-            {
-                
-            }
-            catch (System.Exception)
-            {
-                
-                throw;
-            }
-            finally
-            {
-
-            }
-        }
-
-
-        private void GenerateCharacters()
-        {
-
+            return (char)rnd.Next(FIRST_CHARACTER_ASCII_VALUE, LAST_CHARACTER_ASCII_VALUE);
         }
     }
 }
