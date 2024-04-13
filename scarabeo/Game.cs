@@ -58,7 +58,17 @@ namespace Scarabeo
 			}
 		}
 
+		// TODO 
+		/*
+			1) combine the letters
+			2) check if the word is valid
+			3) control the points
 
+			after these steps the word can be placed
+
+			using bonus:
+			5) 
+		*/
 		private string FindHighestScoreWord()
 		{
 			int maxValue = 0;
@@ -74,7 +84,7 @@ namespace Scarabeo
 
 				int tmpValue = CalculateWordValue(combinedLetters);
 				
-				if (maxValue < tmpValue) // TODO control also the bonus in the board
+				if (maxValue < tmpValue)
 				{
 					maxValue = tmpValue;
 					highestScoreWord = combinedLetters;
@@ -111,6 +121,55 @@ namespace Scarabeo
 		private bool IsWordValid(string combinedLetters)
 		{
 			return dictionary.Search(combinedLetters);
+		}
+
+
+		private int FindPositionOfConstraintCharacter(string combinedLetters)
+		{
+			const int BOARD_SIZE = Scarabeo.BOARD_SIZE;
+
+			for (int i = 0; i < BOARD_SIZE; i++)
+			{
+				char constraintCharacter = '\0';
+				int j;
+
+				for (j = 0; j < BOARD_SIZE; j++)
+					if (scarabeo[i, j] != null)
+					{
+						constraintCharacter = scarabeo[i, j];
+						break;
+					}
+
+				int constraintCharacterIndex = combinedLetters.IndexOf(constraintCharacter);
+
+				if (constraintCharacter == '\0' || constraintCharacter == -1)
+					break;
+
+				int leftAvaibleSpace = j - 1;
+				int rightAvaibleSpace = (BOARD_SIZE - 1) - j;
+				
+				if (!WordCanBePlacedInColumn(
+					leftAvaibleSpace, rightAvaibleSpace, 
+					constraintCharacterIndex, combinedLetters.Length))
+					
+					break;
+
+				// put the word in the right way in the col of the board ---> example:  {, , , i, , ,} <---- "ciao"
+
+																						// output: {, , c, i, a, o}
+				for (int l = 0, k = leftAvaibleSpace - (constraintCharacterIndex - 1); k < combinedLetters.Length; k++, l++)
+					scarabeo[i, k] = combinedLetters[l];
+			}
+
+
+			return -1;
+		}
+
+
+		private bool WordCanBePlacedInColumn(int leftAvaibleSpace, int rightAvaibleSpace, int constraintCharacterIndex, int wordLength)
+		{
+			return leftAvaibleSpace >= constraintCharacterIndex - 1 &&
+				   rightAvaibleSpace >= (wordLength - 1) - constraintCharacterIndex;
 		}
 
 

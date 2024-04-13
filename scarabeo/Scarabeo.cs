@@ -7,7 +7,7 @@ namespace Scarabeo
 {
     class Scarabeo
     {
-        private const int BOARD_SIZE = 8;
+        public const int BOARD_SIZE = 8;
         private char[,] board;
         private static readonly string projectPath = GetProjectPath();
 
