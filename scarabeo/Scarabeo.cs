@@ -14,11 +14,7 @@ namespace Scarabeo
         private static readonly string projectPath = GetProjectPath();
 
 
-        public Scarabeo()
-        {
-            board = new char[BOARD_SIZE, BOARD_SIZE];
-
-        }
+        public Scarabeo()  { board = new char[BOARD_SIZE, BOARD_SIZE]; }
 
 
         private static string GetProjectPath()
@@ -77,6 +73,20 @@ namespace Scarabeo
             Random rnd = new();
 
             return (char)rnd.Next(FIRST_CHARACTER_ASCII_VALUE, LAST_CHARACTER_ASCII_VALUE);
+        }
+
+
+        public void PrintBoard()
+        {
+            Console.Write("\n\n");
+
+            for (int i = 0; i < BOARD_SIZE; i++)
+            {
+                Console.Write("\n");
+
+                for (int j = 0; j < BOARD_SIZE; j++)
+                    Console.Write($"{board[i, j]} ");
+            }
         }
     }
 }

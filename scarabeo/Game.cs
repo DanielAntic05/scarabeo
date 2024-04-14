@@ -30,6 +30,7 @@ namespace Scarabeo
 			Run();
 		}
 	
+
 		private void InitializeDictionary()
 		{
 			if (!File.Exists("files\\" + FILE))
@@ -57,9 +58,9 @@ namespace Scarabeo
 			while (IsGameRunning)
 			{
 				extractedLetters = Distributor.GenerateRandomLetters();
-				
 				string result = FindHighestScoreWord();	
 
+				scarabeo.PrintBoard();
 				Console.WriteLine($"\nresult = {result};\n");
 
 				Console.Write("\nPress any key to change the turn.\n");
@@ -68,6 +69,7 @@ namespace Scarabeo
 				turn = (turn + 1) % 2;
 			}
 		}
+
 
 		// TODO 
 		/*
@@ -85,6 +87,7 @@ namespace Scarabeo
 			int maxValue = 0;
 			int i = 0, j = 0;
 			string highestScoreWord = "";
+			int bestRow = -1, bestCol = -1;
 
 			while (i < extractedLetters.Length)
 			{
@@ -94,14 +97,16 @@ namespace Scarabeo
 					continue;
 
 				int tmpValue = CalculateWordValue(combinedLetters);
+				int tmpBestRow = -1, tmpBestCol = -1;
 
-				if (PutWordBasedOnConstraintCharacter(combinedLetters, tmpValue) == -1)
+				if (PutWordBasedOnConstraintCharacter(combinedLetters, tmpValue, ref tmpBestRow, ref tmpBestCol) == -1)
 					continue;
 				
 				if (maxValue < tmpValue)
 				{
 					maxValue = tmpValue;
 					highestScoreWord = combinedLetters;
+					bestRow = tmpBestRow;  bestCol = tmpBestCol;
 				}
 
 				if (j == extractedLetters.Length - 1)
@@ -113,7 +118,17 @@ namespace Scarabeo
 					j++;
 			}
 
+			if (!string.IsNullOrEmpty(highestScoreWord))
+				InsertHighestScoreWordInBoard(bestRow, bestCol, highestScoreWord);
+
 			return highestScoreWord;
+		}
+
+
+		private void InsertHighestScoreWordInBoard(int bestRow, int bestCol, string highestScoreWord)
+		{
+			for (int j = 0; j < highestScoreWord.Length; j++)
+				scarabeo[bestRow, bestCol++] = highestScoreWord[j];
 		}
 
 
@@ -138,12 +153,12 @@ namespace Scarabeo
 		}
 
 
-		private int PutWordBasedOnConstraintCharacter(string combinedLetters, int wordValue)
+		// have to save the i, j to be able to place the word
+		// in best column
+		private int PutWordBasedOnConstraintCharacter(string combinedLetters, int wordValue, ref int bestRow, ref int bestCol)
 		{
 			const int BOARD_SIZE = Scarabeo.BOARD_SIZE;
-			int leftAvaibleSpace = -1, rightAvaibleSpace = -1;
-			int bestRow = -1, bestCol = -1;
-			int maxValue = 0;
+			int maxValue = -1;
 
 			for (int i = 0; i < BOARD_SIZE; i++)
 			{
@@ -155,11 +170,11 @@ namespace Scarabeo
 
 				int constraintCharacterIndex = j; 
 
-				int tmpLeftAvaibleSpace = constraintCharacterIndex - 1;
-				int tmpRightAvaibleSpace = (BOARD_SIZE - 1) - constraintCharacterIndex;
+				int leftAvaibleSpace = constraintCharacterIndex - 1;
+				int rightAvaibleSpace = (BOARD_SIZE - 1) - constraintCharacterIndex;
 				
 				if (!WordCanBePlacedInColumn(
-					tmpLeftAvaibleSpace, tmpRightAvaibleSpace, 
+					leftAvaibleSpace, rightAvaibleSpace, 
 					constraintCharacterIndex, combinedLetters.Length))
 					
 					continue;
@@ -177,14 +192,7 @@ namespace Scarabeo
 				}
 			}
 
-			return -1;
-		}
-
-
-		private void PutWordInBestColumn(int leftAvaibleSpace, int constraintCharacterIndex, int combinedLetters)
-		{
-			for (int l = 0, k = leftAvaibleSpace - (constraintCharacterIndex - 1); k < combinedLetters.Length; k++, l++)
-				scarabeo[i, k] = combinedLetters[l];
+			return maxValue;
 		}
 
 
