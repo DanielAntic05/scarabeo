@@ -51,6 +51,8 @@ namespace Scarabeo
             {
                 int index = key[level] - 'a';
 
+                Console.Write($"\nindex = {key[level]}\n");
+
                 if (tmpNode.Children[index] == null)
                     return false;
 

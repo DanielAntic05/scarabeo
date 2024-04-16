@@ -19,7 +19,6 @@ namespace Scarabeo
 		{
 			scarabeo = new Scarabeo();
 			dictionary = new CTrie();
-
 		}
 
 
@@ -27,6 +26,7 @@ namespace Scarabeo
 		{
 			scarabeo.InitializeScarabeo();
 			InitializeDictionary();
+			dictionary.Print();
 			Run();
 		}
 	
@@ -42,7 +42,10 @@ namespace Scarabeo
 				string? line;
 
 				while ((line = file.ReadLine()) != null)
+				{
+					Console.Write("\nline = {line}\n");
 					dictionary.Insert(line);
+				}
 
 				file.Close();
 			}
@@ -93,6 +96,16 @@ namespace Scarabeo
 			{
 				string combinedLetters = GetCombinationOfLetters(i, j);
 
+				if (j == extractedLetters.Length - 1)
+				{
+					i++;
+					j = 0;
+				}
+				else
+					j++;
+
+				Console.Write($"\ncombinedLetters = {combinedLetters}\n");
+
 				if (!IsWordValid(combinedLetters))
 					continue;
 
@@ -108,14 +121,6 @@ namespace Scarabeo
 					highestScoreWord = combinedLetters;
 					bestRow = tmpBestRow;  bestCol = tmpBestCol;
 				}
-
-				if (j == extractedLetters.Length - 1)
-				{
-					i++;
-					j = 0;
-				}
-				else
-					j++;
 			}
 
 			if (!string.IsNullOrEmpty(highestScoreWord))

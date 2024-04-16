@@ -85,7 +85,13 @@ namespace Scarabeo
                 Console.Write("\n");
 
                 for (int j = 0; j < BOARD_SIZE; j++)
-                    Console.Write($"{board[i, j]} ");
+                {
+                    if (board[i, j] != null)
+                        Console.Write($"{board[i, j]} ");
+
+                    else
+                        Console.Write("* ");
+                }
             }
         }
     }
