@@ -12,6 +12,9 @@ namespace Scarabeo
 		private	string? extractedLetters;
 		private Scarabeo scarabeo;
 		private CTrie dictionary;
+		private string highestScoreWord = "";
+		private int maxValue = 0, bestRow = -1, bestCol = -1;
+
 		public bool IsGameRunning { get; private set; } = true;
 
 
@@ -26,7 +29,7 @@ namespace Scarabeo
 		{
 			scarabeo.InitializeScarabeo();
 			InitializeDictionary();
-			dictionary.Print();
+			// dictionary.Print();
 			Run();
 		}
 	
@@ -43,7 +46,7 @@ namespace Scarabeo
 
 				while ((line = file.ReadLine()) != null)
 				{
-					Console.Write("\nline = {line}\n");
+					//Console.Write("\nline = {line}\n");
 					dictionary.Insert(line);
 				}
 
@@ -61,10 +64,12 @@ namespace Scarabeo
 			while (IsGameRunning)
 			{
 				extractedLetters = Distributor.GenerateRandomLetters();
+				Console.WriteLine($"\nextractedLetters = {extractedLetters};\n");
+
 				string result = FindHighestScoreWord();	
+				Console.WriteLine($"\nresult = {result};\n");
 
 				scarabeo.PrintBoard();
-				Console.WriteLine($"\nresult = {result};\n");
 
 				Console.Write("\nPress any key to change the turn.\n");
 				Console.ReadKey();
@@ -87,16 +92,38 @@ namespace Scarabeo
 		*/
 		private string FindHighestScoreWord()
 		{
-			int maxValue = 0;
-			int i = 0, j = 0;
-			string highestScoreWord = "";
-			int bestRow = -1, bestCol = -1;
+			highestScoreWord = "";
+			maxValue = 0; 
+			bestRow = -1; 
+			bestCol = -1;
 
-			while (i < extractedLetters.Length)
+
+			Foo(extractedLetters);
+
+			for (int i = 0; i < extractedLetters.Length; i++)
+				for (int j = 0; j < extractedLetters.Length; j++)
+					Foo(extractedLetters.Remove(i, j));
+
+
+			if (!string.IsNullOrEmpty(highestScoreWord))
+				InsertHighestScoreWordInBoard(bestRow, bestCol, highestScoreWord);
+
+			return highestScoreWord;
+		}
+
+
+		private void Foo(string word)
+		{
+			if (string.IsNullOrEmpty(word))
+				return;
+
+			int i = 0, j = 0;
+
+			while (i < word.Length)
 			{
 				string combinedLetters = GetCombinationOfLetters(i, j);
 
-				if (j == extractedLetters.Length - 1)
+				if (j == word.Length - 1)
 				{
 					i++;
 					j = 0;
@@ -104,7 +131,7 @@ namespace Scarabeo
 				else
 					j++;
 
-				Console.Write($"\ncombinedLetters = {combinedLetters}\n");
+				// Console.Write($"\ncombinedLetters = {combinedLetters}\n");
 
 				if (!IsWordValid(combinedLetters))
 					continue;
@@ -122,11 +149,6 @@ namespace Scarabeo
 					bestRow = tmpBestRow;  bestCol = tmpBestCol;
 				}
 			}
-
-			if (!string.IsNullOrEmpty(highestScoreWord))
-				InsertHighestScoreWordInBoard(bestRow, bestCol, highestScoreWord);
-
-			return highestScoreWord;
 		}
 
 
@@ -148,7 +170,7 @@ namespace Scarabeo
 			result[i] = result[j];
 			result[j] = tmpChar;
 
-			return result.ToString();
+			return new string(result);
 		}
 
 
