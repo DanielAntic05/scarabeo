@@ -7,15 +7,20 @@ namespace Scarabeo
 	{
 		private const int N_PLAYERS = 2;
 		private const int PLAYER_MAX_LETTERS = 8;
+		private const int PENALITY = 5;
 		private int turn = 0;
 		private static readonly string FILE = "dictionary.txt";
 		private static readonly string[] letterGroups = { "aceiorst", "lmn", "p", "bdfguv", "hz", "q" };
  	    private static readonly int[] points = { 1, 2, 3, 4, 8, 10 };
 		private Scarabeo scarabeo;
 		private CTrie dictionary;
+
 		private string highestScoreWord = "";
 		private int maxValue = 0, bestRow = -1, bestCol = -1;
+
 		private List<char>[] playerExtractedLetters = new List<char>[N_PLAYERS];
+
+		private int[] playerPoints = new int[N_PLAYERS];
 
 		public bool IsGameRunning { get; private set; } = true;
 
@@ -70,8 +75,6 @@ namespace Scarabeo
 			{
 				string extractedLetters = Distributor.GenerateRandomLetters(PLAYER_MAX_LETTERS - playerExtractedLetters[turn].Count());
 
-				// TODO  add the possibility to restor 'playerExtractedLetters' to '0'
-
 				for (int i = 0; i < extractedLetters.Length; i++)
 					playerExtractedLetters[turn].Add(extractedLetters[i]);
 
@@ -82,10 +85,40 @@ namespace Scarabeo
 
 				scarabeo.PrintBoard();
 
-				Console.Write("\nPress any key to change the turn.\n");
-				Console.ReadKey();
+				try
+				{
+					if (string.IsNullOrEmpty(result))
+					{
+						playerExtractedLetters[turn].Clear();
 
-				turn = (turn + 1) % N_PLAYERS;
+						Console.Write("\nPress 's' to substitute the letters with 8 new letters.\tWARNING: You will lose 5 points.");
+						Console.Write("\nPress any other key to pass the turn.\tYou will gain 0 points");
+						ConsoleKeyInfo keyInfo = Console.ReadKey();
+						char inputCharacter = keyInfo.KeyChar;
+
+						switch(inputCharacter)
+						{
+							case 's':
+								playerPoints[turn] -= PENALITY;
+								turn++;  // to keep the turn of the current_player
+								break;
+
+							default:
+								break;
+						}
+
+						continue;
+					}
+
+					for (int i = 0; i < result.Length; i++)
+						playerExtractedLetters[turn].RemoveAll(c => c == result[i]);
+
+					playerPoints[turn] += maxValue;
+				}
+				finally
+				{
+					turn = (turn + 1) % N_PLAYERS;
+				}
 			}
 		}
 
@@ -113,7 +146,7 @@ namespace Scarabeo
 
 			for (int i = 0; i < stringLength; i++)
 				for (int j = i; j < stringLength; j++)
-					Foo(extractedLetters.Substring(i, stringLength - j));
+					ManagePermutations(extractedLetters.Substring(i, stringLength - j));
 
 
 			if (!string.IsNullOrEmpty(highestScoreWord))
@@ -123,7 +156,7 @@ namespace Scarabeo
 		}
 
 
-		private void Foo(string word)
+		private void ManagePermutations(string word)
 		{
 			if (string.IsNullOrEmpty(word))
 				return;
@@ -137,6 +170,8 @@ namespace Scarabeo
 				if (!IsWordValid(permutations[i]))
 					continue;
 					
+				Console.Write($"\n\tword = {permutations[i]}\n");
+
 				int tmpValue = CalculateWordValue(permutations[i]);
 				int tmpBestRow = -1, tmpBestCol = -1;
 
@@ -202,14 +237,40 @@ namespace Scarabeo
 
 			for (int i = 0, j; i < BOARD_SIZE; i++)
 			{
+				if (ColumnContainsWord(i))
+					continue;
+
 				for (j = 0; j < BOARD_SIZE; j++)
-					if (scarabeo[i, j] != null)
+					if (scarabeo[i, j] != '\0')
 						break;
 
 				int constraintCharacterIndex = j; 
+				char constraintCharacter = scarabeo[i, constraintCharacterIndex];
+
+				if (!combinedLetters.Contains(constraintCharacter))
+					continue;
+
+				int nConstraintCharacterDuplicates = GetNumberOfConstraintCharaterDuplicates(combinedLetters, constraintCharacter);
+
+				// foreach duplicate calculate if it can be placed in the board
+
+				/*
+					...
+				*/
 
 				int leftAvaibleSpace = constraintCharacterIndex - 1;
 				int rightAvaibleSpace = (BOARD_SIZE - 1) - constraintCharacterIndex;
+
+				int numberOfLeftCharacters = combinedLetters.IndexOf(constraintCharacter) - 1;
+
+				
+				// check if constraint character is contained in combinedLetter
+
+				// if true:
+				//     check left right, after finding the index of combinerLetters[?] == scarabeo[i, constraintCharacterIndex].
+
+				// else: continue
+
 				
 				if (!WordCanBePlacedInColumn(
 					leftAvaibleSpace, rightAvaibleSpace, 
@@ -225,12 +286,24 @@ namespace Scarabeo
 
 				if (maxValue < wordValue)
 				{
-					bestRow = i; bestCol = j;
+					bestRow = i; bestCol = leftAvaibleSpace;
 					maxValue = wordValue;
 				}
 			}
 
 			return maxValue;
+		}
+
+
+		private int GetNumberOfConstraintCharaterDuplicates(string combinedLetters, char constraintCharacter)
+		{
+			int counter = 0;
+			
+			foreach (char c in combinedLetters)
+				if (c == constraintCharacter)
+					counter++;
+
+			return counter++;
 		}
 
 
@@ -242,6 +315,18 @@ namespace Scarabeo
 		{
 			return leftAvaibleSpace >= constraintCharacterIndex - 1 &&
 				   rightAvaibleSpace >= (wordLength - 1) - constraintCharacterIndex;
+		}
+
+		
+		private bool ColumnContainsWord(int y)
+		{
+			int counter = 0;
+
+			for (int x = 0; x < Scarabeo.BOARD_SIZE; x++)
+				if (scarabeo[y, x] != '\0')
+					counter++;
+			
+			return counter > 1 ? true : false;
 		}
 
 
@@ -259,7 +344,7 @@ namespace Scarabeo
 		private int FindLetterValue(in char c)
 		{
 			for (int i = 0; i < letterGroups.Length; i++)
-				for (int j = 0; j < letterGroups.Length; j++)
+				for (int j = 0; j < letterGroups[i].Length; j++)
 					if (letterGroups[i][j] == c)
 						return points[i];
 

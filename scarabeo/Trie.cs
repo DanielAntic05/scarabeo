@@ -111,6 +111,7 @@ namespace Scarabeo
         public void Print()
         {
             PrintRecursive(Root, "");
+            Console.Write("\n");
         }
 
 
