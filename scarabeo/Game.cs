@@ -6,6 +6,7 @@ namespace Scarabeo
 	class Game
 	{
 		private const int N_PLAYERS = 2;
+		private const int PLAYER_MAX_LETTERS = 8;
 		private int turn = 0;
 		private static readonly string FILE = "dictionary.txt";
 		private static readonly string[] letterGroups = { "aceiorst", "lmn", "p", "bdfguv", "hz", "q" };
@@ -67,12 +68,12 @@ namespace Scarabeo
 		{
 			while (IsGameRunning)
 			{
-				//string extractedLetters = Distributor.GenerateRandomLetters();
-				string extractedLetters = "almenohe";
+				string extractedLetters = Distributor.GenerateRandomLetters(PLAYER_MAX_LETTERS - playerExtractedLetters[turn].Count());
+
+				// TODO  add the possibility to restor 'playerExtractedLetters' to '0'
 
 				for (int i = 0; i < extractedLetters.Length; i++)
-					if (playerExtractedLetters[turn].Count() == 0 || !playerExtractedLetters[turn].Exists(c => c == extractedLetters[i]))
-						playerExtractedLetters[turn].Add(extractedLetters[i]);
+					playerExtractedLetters[turn].Add(extractedLetters[i]);
 
 				Console.WriteLine($"\nextractedLetters = {extractedLetters};\n");
 
@@ -107,13 +108,12 @@ namespace Scarabeo
 			bestRow = -1; 
 			bestCol = -1;
 
-
 			int stringLength = playerExtractedLetters[turn].Count();
-			string extractedLetters = new string(playerExtractedLetters[turn].ToArray());
+			string extractedLetters = new(playerExtractedLetters[turn].ToArray());
 
 			for (int i = 0; i < stringLength; i++)
 				for (int j = i; j < stringLength; j++)
-					Foo(extractedLetters.Substring(i, stringLength - 1 - j));
+					Foo(extractedLetters.Substring(i, stringLength - j));
 
 
 			if (!string.IsNullOrEmpty(highestScoreWord))
@@ -128,35 +128,25 @@ namespace Scarabeo
 			if (string.IsNullOrEmpty(word))
 				return;
 
-			int i = 0, j = 0;
+			List<string> permutations = new List<string>();
 
-			while (i < word.Length)
+			Permute(playerExtractedLetters[turn].ToArray(), 0, word.Length, ref permutations);
+
+			for (int i = 0; i < permutations.Count(); i++)
 			{
-				string combinedLetters = GetCombinationOfLetters(i, j);
-
-				if (j == word.Length - 1)
-				{
-					i++;
-					j = 0;
-				}
-				else
-					j++;
-
-				// Console.Write($"\ncombinedLetters = {combinedLetters}\n");
-
-				if (!IsWordValid(combinedLetters))
+				if (!IsWordValid(permutations[i]))
 					continue;
-
-				int tmpValue = CalculateWordValue(combinedLetters);
+					
+				int tmpValue = CalculateWordValue(permutations[i]);
 				int tmpBestRow = -1, tmpBestCol = -1;
 
-				if (PutWordBasedOnConstraintCharacter(combinedLetters, tmpValue, ref tmpBestRow, ref tmpBestCol) == -1)
+				if (PutWordBasedOnConstraintCharacter(permutations[i], tmpValue, ref tmpBestRow, ref tmpBestCol) == -1)
 					continue;
 				
 				if (maxValue < tmpValue)
 				{
 					maxValue = tmpValue;
-					highestScoreWord = combinedLetters;
+					highestScoreWord = permutations[i];
 					bestRow = tmpBestRow;  bestCol = tmpBestCol;
 				}
 			}
@@ -170,18 +160,30 @@ namespace Scarabeo
 		}
 
 
-		private string GetCombinationOfLetters(int i, int j)
+		private void Permute(char[] letters, int start, int end, ref List<string> permutations)
 		{
-			if (i == 0 && j == 0)
-				return new string(playerExtractedLetters[turn].ToArray());
+			if (start == end - 1)
+			{
+				permutations.Add(new string(letters));
+				return;
+			}
+			
+			for (int i = start; i < end; i++)
+			{
+				Swap(ref letters[start], ref letters[i]);
 
-			char[] result = playerExtractedLetters[turn].ToArray();
-			char tmpChar = result[i];
+				Permute(letters, start + 1, end, ref permutations);
 
-			result[i] = result[j];
-			result[j] = tmpChar;
+				Swap(ref letters[start], ref letters[i]);
+			}
+		}
 
-			return new string(result);
+
+		private void Swap(ref char x, ref char y)
+		{
+			char tmpValue = x;
+			x = y;
+			y = tmpValue;
 		}
 
 
