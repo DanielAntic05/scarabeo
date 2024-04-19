@@ -5,15 +5,16 @@ namespace Scarabeo
 {
 	class Game
 	{
+		private const int N_PLAYERS = 2;
 		private int turn = 0;
 		private static readonly string FILE = "dictionary.txt";
 		private static readonly string[] letterGroups = { "aceiorst", "lmn", "p", "bdfguv", "hz", "q" };
  	    private static readonly int[] points = { 1, 2, 3, 4, 8, 10 };
-		private	string? extractedLetters;
 		private Scarabeo scarabeo;
 		private CTrie dictionary;
 		private string highestScoreWord = "";
 		private int maxValue = 0, bestRow = -1, bestCol = -1;
+		private List<char>[] playerExtractedLetters = new List<char>[N_PLAYERS];
 
 		public bool IsGameRunning { get; private set; } = true;
 
@@ -22,6 +23,9 @@ namespace Scarabeo
 		{
 			scarabeo = new Scarabeo();
 			dictionary = new CTrie();
+
+			for (int i = 0; i < N_PLAYERS; i++)
+				playerExtractedLetters[i] = new List<char>();
 		}
 
 
@@ -63,7 +67,13 @@ namespace Scarabeo
 		{
 			while (IsGameRunning)
 			{
-				extractedLetters = Distributor.GenerateRandomLetters();
+				//string extractedLetters = Distributor.GenerateRandomLetters();
+				string extractedLetters = "almenohe";
+
+				for (int i = 0; i < extractedLetters.Length; i++)
+					if (playerExtractedLetters[turn].Count() == 0 || !playerExtractedLetters[turn].Exists(c => c == extractedLetters[i]))
+						playerExtractedLetters[turn].Add(extractedLetters[i]);
+
 				Console.WriteLine($"\nextractedLetters = {extractedLetters};\n");
 
 				string result = FindHighestScoreWord();	
@@ -74,7 +84,7 @@ namespace Scarabeo
 				Console.Write("\nPress any key to change the turn.\n");
 				Console.ReadKey();
 
-				turn = (turn + 1) % 2;
+				turn = (turn + 1) % N_PLAYERS;
 			}
 		}
 
@@ -98,11 +108,12 @@ namespace Scarabeo
 			bestCol = -1;
 
 
-			Foo(extractedLetters);
+			int stringLength = playerExtractedLetters[turn].Count();
+			string extractedLetters = new string(playerExtractedLetters[turn].ToArray());
 
-			for (int i = 0; i < extractedLetters.Length; i++)
-				for (int j = 0; j < extractedLetters.Length; j++)
-					Foo(extractedLetters.Remove(i, j));
+			for (int i = 0; i < stringLength; i++)
+				for (int j = i; j < stringLength; j++)
+					Foo(extractedLetters.Substring(i, stringLength - 1 - j));
 
 
 			if (!string.IsNullOrEmpty(highestScoreWord))
@@ -162,9 +173,9 @@ namespace Scarabeo
 		private string GetCombinationOfLetters(int i, int j)
 		{
 			if (i == 0 && j == 0)
-				return extractedLetters;
+				return new string(playerExtractedLetters[turn].ToArray());
 
-			char[] result = extractedLetters.ToCharArray();
+			char[] result = playerExtractedLetters[turn].ToArray();
 			char tmpChar = result[i];
 
 			result[i] = result[j];
@@ -187,10 +198,8 @@ namespace Scarabeo
 			const int BOARD_SIZE = Scarabeo.BOARD_SIZE;
 			int maxValue = -1;
 
-			for (int i = 0; i < BOARD_SIZE; i++)
+			for (int i = 0, j; i < BOARD_SIZE; i++)
 			{
-				int j;
-
 				for (j = 0; j < BOARD_SIZE; j++)
 					if (scarabeo[i, j] != null)
 						break;
