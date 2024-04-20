@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Data;
 using System.Runtime.CompilerServices;
 
 namespace Scarabeo
@@ -250,60 +252,63 @@ namespace Scarabeo
 				if (!combinedLetters.Contains(constraintCharacter))
 					continue;
 
-				int nConstraintCharacterDuplicates = GetNumberOfConstraintCharaterDuplicates(combinedLetters, constraintCharacter);
-
 				// foreach duplicate calculate if it can be placed in the board
 
 				/*
 					...
 				*/
 
-				int leftAvaibleSpace = constraintCharacterIndex - 1;
-				int rightAvaibleSpace = (BOARD_SIZE - 1) - constraintCharacterIndex;
+				int start = combinedLetters.IndexOf(constraintCharacter);
 
-				int numberOfLeftCharacters = combinedLetters.IndexOf(constraintCharacter) - 1;
-
-				
-				// check if constraint character is contained in combinedLetter
-
-				// if true:
-				//     check left right, after finding the index of combinerLetters[?] == scarabeo[i, constraintCharacterIndex].
-
-				// else: continue
-
-				
-				if (!WordCanBePlacedInColumn(
-					leftAvaibleSpace, rightAvaibleSpace, 
-					constraintCharacterIndex, combinedLetters.Length))
-					
-					continue;
-
-				// puts the word in the right way in the col of the board ---> example:  {, , , i, , ,} <---- "ciao"
-				// 																							  output: {, , c, i, a, o}
-
-				// here i have to compare the points of the word 
-				// in each column considering the "bonus".
-
-				if (maxValue < wordValue)
+				do
 				{
-					bestRow = i; bestCol = leftAvaibleSpace;
-					maxValue = wordValue;
-				}
+					int leftAvaibleSpaceInBoard = constraintCharacterIndex - 1;
+					int rightAvaibleSpaceInBoard = (BOARD_SIZE - 1) - constraintCharacterIndex;
+
+					int numberOfLeftCharacters = start - 1;
+					int numberOfRightCharacters = (combinedLetters.Length - 1) - start;
+
+					
+					// check if constraint character is contained in combinedLetter
+
+					// if true:
+					//     check left right, after finding the index of combinerLetters[?] == scarabeo[i, constraintCharacterIndex].
+
+					// else: continue
+
+					
+					if (!WordCanBePlacedInColumn(
+						leftAvaibleSpaceInBoard, rightAvaibleSpaceInBoard,
+						numberOfLeftCharacters, numberOfRightCharacters))
+						
+						continue;
+
+					// puts the word in the right way in the col of the board ---> example:  {, , , i, , ,} <---- "ciao"
+					// 																							  output: {, , c, i, a, o}
+
+					// here i have to compare the points of the word 
+					// in each column considering the "bonus".
+
+					if (maxValue < wordValue)
+					{
+						bestRow = i; bestCol = leftAvaibleSpaceInBoard;
+						maxValue = wordValue;
+					}
+
+				} while ((start = GetConstraintCharacterIndexInWord(combinedLetters, constraintCharacter, start)) == -1);
 			}
 
 			return maxValue;
 		}
 
 
-		private int GetNumberOfConstraintCharaterDuplicates(string combinedLetters, char constraintCharacter)
+		private int GetConstraintCharacterIndexInWord(string combinedLetters, char constraintCharacter, int j)
 		{
-			int counter = 0;
-			
-			foreach (char c in combinedLetters)
-				if (c == constraintCharacter)
-					counter++;
+			for (int k = j; k < combinedLetters.Length; k++)
+				if (combinedLetters[k] == constraintCharacter)
+					return k;
 
-			return counter++;
+			return -1;
 		}
 
 
@@ -311,10 +316,11 @@ namespace Scarabeo
 		// after the cell where constraint character is placed.
 		// Example:  {, l, , ,}   input: "hello" ---> there is not enough space at the left of 'i'
 
-		private bool WordCanBePlacedInColumn(int leftAvaibleSpace, int rightAvaibleSpace, int constraintCharacterIndex, int wordLength)
+		private bool WordCanBePlacedInColumn(int leftAvaibleSpaceInBoard, int rightAvaibleSpaceInBoard, 
+											 int numberOfLeftCharacters, int numberOfRightCharacters)
 		{
-			return leftAvaibleSpace >= constraintCharacterIndex - 1 &&
-				   rightAvaibleSpace >= (wordLength - 1) - constraintCharacterIndex;
+			return leftAvaibleSpaceInBoard >= numberOfLeftCharacters &&
+				   rightAvaibleSpaceInBoard >= rightAvaibleSpaceInBoard;
 		}
 
 		
