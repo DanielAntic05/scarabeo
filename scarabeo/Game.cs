@@ -10,7 +10,8 @@ namespace Scarabeo
 		private const int N_PLAYERS = 2;
 		private const int PLAYER_MAX_LETTERS = 8;
 		private const int PENALITY = 5;
-		private int turn = 0;
+		private const int BOARD_SIZE = Scarabeo.BOARD_SIZE;
+		private int turn = 1;
 		private static readonly string FILE = "dictionary.txt";
 		private static readonly string[] letterGroups = { "aceiorst", "lmn", "p", "bdfguv", "hz", "q" };
  	    private static readonly int[] points = { 1, 2, 3, 4, 8, 10 };
@@ -24,6 +25,7 @@ namespace Scarabeo
 
 		private int[] playerPoints = new int[N_PLAYERS];
 
+		private int numberOfWordsFound = 0;
 		public bool IsGameRunning { get; private set; } = true;
 
 
@@ -41,7 +43,6 @@ namespace Scarabeo
 		{
 			scarabeo.InitializeScarabeo();
 			InitializeDictionary();
-			// dictionary.Print();
 			Run();
 		}
 	
@@ -73,56 +74,58 @@ namespace Scarabeo
 
 		private void Run()
 		{
-			while (IsGameRunning)
+			while (numberOfWordsFound < BOARD_SIZE)
 			{
+				turn = (turn + 1) % N_PLAYERS;
+
 				string extractedLetters = Distributor.GenerateRandomLetters(PLAYER_MAX_LETTERS - playerExtractedLetters[turn].Count());
 
 				for (int i = 0; i < extractedLetters.Length; i++)
 					playerExtractedLetters[turn].Add(extractedLetters[i]);
 
-				Console.WriteLine($"\nextractedLetters = {extractedLetters};\n");
+				//Console.WriteLine($"\nextractedLetters = {extractedLetters};\n");
+				FindHighestScoreWord();
 
-				string result = FindHighestScoreWord();	
-				Console.WriteLine($"\nresult = {result};\n");
-
-				scarabeo.PrintBoard();
-
-				try
+				if (string.IsNullOrEmpty(highestScoreWord))
 				{
-					if (string.IsNullOrEmpty(result))
-					{
-						playerExtractedLetters[turn].Clear();
-
-						Console.Write("\nPress 's' to substitute the letters with 8 new letters.\tWARNING: You will lose 5 points.");
-						Console.Write("\nPress any other key to pass the turn.\tYou will gain 0 points");
-						ConsoleKeyInfo keyInfo = Console.ReadKey();
-						char inputCharacter = keyInfo.KeyChar;
-
-						switch(inputCharacter)
-						{
-							case 's':
-								playerPoints[turn] -= PENALITY;
-								turn++;  // to keep the turn of the current_player
-								break;
-
-							default:
-								break;
-						}
-
-						continue;
-					}
-
-					for (int i = 0; i < result.Length; i++)
-						playerExtractedLetters[turn].RemoveAll(c => c == result[i]);
-
-					playerPoints[turn] += maxValue;
+					ManageSituationWithNoResult();	
+					continue;
 				}
-				finally
-				{
-					turn = (turn + 1) % N_PLAYERS;
-				}
+
+				Console.WriteLine($"highestScoreWord = {highestScoreWord}");
+				++numberOfWordsFound;
+
+				for (int i = 0; i < highestScoreWord.Length; i++)
+					playerExtractedLetters[turn].RemoveAll(c => c == highestScoreWord[i]);
+
+				playerPoints[turn] += maxValue;
 			}
+
+			scarabeo.PrintBoard();
+			IsGameRunning = false;
 		}
+
+		private void ManageSituationWithNoResult()
+		{
+			playerExtractedLetters[turn].Clear();
+/*
+			Console.Write("\nPress 's' to substitute the letters with 8 new letters.\tWARNING: You will lose 5 points.");
+			Console.Write("\nPress any other key to pass the turn.\tYou will gain 0 points");
+			ConsoleKeyInfo keyInfo = Console.ReadKey();
+			char inputCharacter = keyInfo.KeyChar;
+
+			switch(inputCharacter)
+			{
+				case 's':
+					playerPoints[turn] -= PENALITY;
+					turn++;  // to keep the turn of the current_player
+					break;
+
+				default:
+					break;
+			}
+*/
+		}		
 
 
 		// TODO 
@@ -136,7 +139,7 @@ namespace Scarabeo
 			using bonus:
 			5) 
 		*/
-		private string FindHighestScoreWord()
+		private void FindHighestScoreWord()
 		{
 			highestScoreWord = "";
 			maxValue = 0; 
@@ -153,8 +156,6 @@ namespace Scarabeo
 
 			if (!string.IsNullOrEmpty(highestScoreWord))
 				InsertHighestScoreWordInBoard(bestRow, bestCol, highestScoreWord);
-
-			return highestScoreWord;
 		}
 
 
@@ -172,8 +173,6 @@ namespace Scarabeo
 				if (!IsWordValid(permutations[i]))
 					continue;
 					
-				Console.Write($"\n\tword = {permutations[i]}\n");
-
 				int tmpValue = CalculateWordValue(permutations[i]);
 				int tmpBestRow = -1, tmpBestCol = -1;
 
@@ -234,7 +233,6 @@ namespace Scarabeo
 		// in best column
 		private int PutWordBasedOnConstraintCharacter(string combinedLetters, int wordValue, ref int bestRow, ref int bestCol)
 		{
-			const int BOARD_SIZE = Scarabeo.BOARD_SIZE;
 			int maxValue = -1;
 
 			for (int i = 0, j; i < BOARD_SIZE; i++)
@@ -291,7 +289,7 @@ namespace Scarabeo
 
 					if (maxValue < wordValue)
 					{
-						bestRow = i; bestCol = leftAvaibleSpaceInBoard;
+						bestRow = i; bestCol = leftAvaibleSpaceInBoard - numberOfLeftCharacters;
 						maxValue = wordValue;
 					}
 
@@ -320,7 +318,7 @@ namespace Scarabeo
 											 int numberOfLeftCharacters, int numberOfRightCharacters)
 		{
 			return leftAvaibleSpaceInBoard >= numberOfLeftCharacters &&
-				   rightAvaibleSpaceInBoard >= rightAvaibleSpaceInBoard;
+				   rightAvaibleSpaceInBoard >= numberOfRightCharacters;
 		}
 
 		
@@ -328,7 +326,7 @@ namespace Scarabeo
 		{
 			int counter = 0;
 
-			for (int x = 0; x < Scarabeo.BOARD_SIZE; x++)
+			for (int x = 0; x < BOARD_SIZE; x++)
 				if (scarabeo[y, x] != '\0')
 					counter++;
 			
